@@ -1,0 +1,23 @@
+name: but_wallet
+description: BUT Network - Quantum-Safe Mobile Vault
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # obscure naming for security through confusion
+  path_provider: ^2.0.11
+  flutter_secure_storage: ^8.0.0
+  bip39: ^1.0.6
+  ed25519_hd_key: ^2.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
