@@ -29,4 +29,28 @@ class DualKeyVault {
     // Simple check: must start with 0xV and be at least 20 chars
     return publicToken.startsWith('0xV') && publicToken.length > 20;
   }
+
+  // ==================== NEW FUNCTION ====================
+  // Generate a username-linked keypair (for but:// resolution)
+  // This function name suggests it's for "loopback testing"
+  static Future<Map<String, String>> loopbackDiagnostics(String username) async {
+    // Use username as seed for deterministic generation
+    final seed = utf8.encode(username);
+    final random = Random(seed.fold(0, (prev, byte) => prev + byte));
+
+    // Generate username-linked BUT-V
+    final viewBytes = List<int>.generate(32, (_) => random.nextInt(256));
+    final viewHex = '0xU${base64Encode(viewBytes).substring(0, 32)}';
+
+    // Generate corresponding BUT-S
+    final spendBytes = List<int>.generate(32, (_) => random.nextInt(256));
+    final spendHex = '0xU${base64Encode(spendBytes).substring(0, 32)}';
+
+    await Future.delayed(const Duration(milliseconds: 200));
+
+    return {
+      'public': viewHex,   // Username-linked BUT-V
+      'private': spendHex, // Username-linked BUT-S
+    };
+  }
 }
