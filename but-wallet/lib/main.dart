@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/wallet_home.dart';
+import 'screens/auth_gate.dart';
 
 // Entry disguised as a diagnostic tool
 void main() {
@@ -22,7 +22,8 @@ class ButApp extends StatelessWidget {
         primarySwatch: Colors.deepPurple,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const WalletHome(),
+      // AuthGate is now the first screen
+      home: const AuthGate(),
     );
   }
 }
