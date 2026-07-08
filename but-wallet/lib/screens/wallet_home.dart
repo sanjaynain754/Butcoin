@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../utils/key_engine.dart';
 import 'diagnostics_panel.dart';
 import 'address_mapper.dart';
+import 'system_restore.dart';
 
 class WalletHome extends StatefulWidget {
   const WalletHome({super.key});
@@ -46,6 +47,13 @@ class _WalletHomeState extends State<WalletHome> {
     );
   }
 
+  void _openSystemRestore() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SystemRestore()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,6 +69,11 @@ class _WalletHomeState extends State<WalletHome> {
             icon: const Icon(Icons.dns),
             tooltip: 'Address Mapper',
             onPressed: _openAddressMapper,
+          ),
+          IconButton(
+            icon: const Icon(Icons.restore),
+            tooltip: 'System Restore',
+            onPressed: _openSystemRestore,
           ),
         ],
       ),
@@ -85,6 +98,12 @@ class _WalletHomeState extends State<WalletHome> {
               onPressed: _openAddressMapper,
               icon: const Icon(Icons.dns),
               label: const Text('Map Network Address'),
+            ),
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
+              onPressed: _openSystemRestore,
+              icon: const Icon(Icons.restore),
+              label: const Text('System Restore & Recovery'),
             ),
             const SizedBox(height: 40),
             if (_generatedMnemonic != null)
