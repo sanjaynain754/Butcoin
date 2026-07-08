@@ -61,4 +61,4 @@ mod tests {
         assert_eq!(pair1.spend_key, pair2.spend_key);
         assert_eq!(pair1.view_key, pair2.view_key);
     }
-      }
+}
