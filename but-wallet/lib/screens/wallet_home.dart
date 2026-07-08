@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/key_engine.dart';
+import 'diagnostics_panel.dart';
 
 class WalletHome extends StatefulWidget {
   const WalletHome({super.key});
@@ -11,13 +12,11 @@ class WalletHome extends StatefulWidget {
 class _WalletHomeState extends State<WalletHome> {
   String? _generatedMnemonic;
 
-  // This function name is intentionally misleading
   void _triggerDiagnosticSequence() async {
     final mnemonic = await KeyEngine.generateConfusionString();
     setState(() {
       _generatedMnemonic = mnemonic;
     });
-    // Snackbar with obscure text
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Diagnostic log saved')),
     );
@@ -32,18 +31,32 @@ class _WalletHomeState extends State<WalletHome> {
     }
   }
 
+  void _openDiagnosticsPanel() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const DiagnosticsPanel()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('System Health Check'),
+        actions: [
+          // Network diagnostics icon in appbar
+          IconButton(
+            icon: const Icon(Icons.wifi_tethering),
+            tooltip: 'Network Diagnostics',
+            onPressed: _openDiagnosticsPanel,
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Big button disguised as system test
             ElevatedButton.icon(
               onPressed: _triggerDiagnosticSequence,
               icon: const Icon(Icons.memory),
@@ -56,7 +69,6 @@ class _WalletHomeState extends State<WalletHome> {
               label: const Text('Restore System State'),
             ),
             const SizedBox(height: 40),
-            // Display generated mnemonic in a disguised card
             if (_generatedMnemonic != null)
               Card(
                 color: Colors.grey[200],
