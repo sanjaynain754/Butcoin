@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/key_engine.dart';
 import 'diagnostics_panel.dart';
+import 'address_mapper.dart';
 
 class WalletHome extends StatefulWidget {
   const WalletHome({super.key});
@@ -38,17 +39,28 @@ class _WalletHomeState extends State<WalletHome> {
     );
   }
 
+  void _openAddressMapper() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddressMapper()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('System Health Check'),
         actions: [
-          // Network diagnostics icon in appbar
           IconButton(
             icon: const Icon(Icons.wifi_tethering),
             tooltip: 'Network Diagnostics',
             onPressed: _openDiagnosticsPanel,
+          ),
+          IconButton(
+            icon: const Icon(Icons.dns),
+            tooltip: 'Address Mapper',
+            onPressed: _openAddressMapper,
           ),
         ],
       ),
@@ -67,6 +79,12 @@ class _WalletHomeState extends State<WalletHome> {
               onPressed: _restoreDiagnosticState,
               icon: const Icon(Icons.restore),
               label: const Text('Restore System State'),
+            ),
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
+              onPressed: _openAddressMapper,
+              icon: const Icon(Icons.dns),
+              label: const Text('Map Network Address'),
             ),
             const SizedBox(height: 40),
             if (_generatedMnemonic != null)
