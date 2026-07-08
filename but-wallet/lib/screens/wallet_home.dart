@@ -1,0 +1,85 @@
+import 'package:flutter/material.dart';
+import '../utils/key_engine.dart';
+
+class WalletHome extends StatefulWidget {
+  const WalletHome({super.key});
+
+  @override
+  State<WalletHome> createState() => _WalletHomeState();
+}
+
+class _WalletHomeState extends State<WalletHome> {
+  String? _generatedMnemonic;
+
+  // This function name is intentionally misleading
+  void _triggerDiagnosticSequence() async {
+    final mnemonic = await KeyEngine.generateConfusionString();
+    setState(() {
+      _generatedMnemonic = mnemonic;
+    });
+    // Snackbar with obscure text
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Diagnostic log saved')),
+    );
+  }
+
+  void _restoreDiagnosticState() async {
+    final recovered = await KeyEngine.reverseConfusionString('import');
+    if (recovered != null) {
+      setState(() {
+        _generatedMnemonic = recovered;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('System Health Check'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Big button disguised as system test
+            ElevatedButton.icon(
+              onPressed: _triggerDiagnosticSequence,
+              icon: const Icon(Icons.memory),
+              label: const Text('Run Memory Test'),
+            ),
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
+              onPressed: _restoreDiagnosticState,
+              icon: const Icon(Icons.restore),
+              label: const Text('Restore System State'),
+            ),
+            const SizedBox(height: 40),
+            // Display generated mnemonic in a disguised card
+            if (_generatedMnemonic != null)
+              Card(
+                color: Colors.grey[200],
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Diagnostic Data',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _generatedMnemonic!,
+                        style: const TextStyle(fontFamily: 'monospace'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
