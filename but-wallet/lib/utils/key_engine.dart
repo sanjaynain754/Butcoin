@@ -3,8 +3,75 @@ import 'package:bip39/bip39.dart' as bip39;
 import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:flutter/services.dart';
 import 'bip_paths.dart';
+import 'rust_bridge.dart';
 
 class KeyEngine {
+  // ==================== Rust FFI Integration ====================
+
+  /// Try to generate keys using Rust CKS (512-bit)
+  static Future<Map<String, String>?> generateCksKeys() async {
+    // Try Rust FFI first
+    final rustResult = RustBridge.generate512Keypair();
+    
+    if (rustResult != null) {
+      try {
+        final json = jsonDecode(rustResult);
+        if (json['status'] == 'success') {
+          return {
+            'spend_key': '0xS${json['spend_key']}',
+            'view_key': '0xV${json['view_key']}',
+            'chain_code': json['chain_code'],
+            'security': json['security'],
+            'source': 'Rust CKS',
+          };
+        }
+      } catch (e) {
+        // Fallback to Dart
+      }
+    }
+    
+    // Fallback: Use BIP39 + ED25519
+    return null;
+  }
+
+  /// Try to generate vault keys using Rust CKS (1024-bit)
+  static Future<Map<String, String>?> generateVaultKeys() async {
+    final rustResult = RustBridge.generate1024Keypair();
+    
+    if (rustResult != null) {
+      try {
+        final json = jsonDecode(rustResult);
+        if (json['status'] == 'success' && json['integrity'] == true) {
+          return {
+            'primary_key': '0xP${json['primary_key']}',
+            'secondary_key': '0xS${json['secondary_key']}',
+            'vault_nonce': json['vault_nonce'],
+            'security': json['security'],
+            'source': 'Rust CKS Vault',
+          };
+        }
+      } catch (e) {
+        // Fallback
+      }
+    }
+    
+    return null;
+  }
+
+  /// Sign message using Rust hybrid signature
+  static Future<String?> signWithRust(String message, {int level = 1}) async {
+    final result = RustBridge.signMessage(message, level);
+    return result;
+  }
+
+  /// Get Rust library version
+  static String? getRustVersion() {
+    return RustBridge.getVersion();
+  }
+
+  /// Check if Rust FFI is available
+  static bool get isRustAvailable => RustBridge.isAvailable;
+
   // ==================== BUT Standard: 24 Words, 512-bit ====================
   
   /// Generate 24-word mnemonic (256-bit entropy → 512-bit security with CKS)
@@ -50,25 +117,34 @@ class KeyEngine {
 
   /// Derive BUT standard keys (CKS-512)
   static Future<Map<String, String>> deriveButKeys(String mnemonic) async {
-    // Primary: BIP88 (CKS-512)
-    final primary = await deriveKeysWithPath(mnemonic, BipPaths.bip88);
-    
-    // Secondary: BUT-S & BUT-V
+    // First, try Rust CKS
+    final cksKeys = await generateCksKeys();
+    if (cksKeys != null) {
+      return cksKeys;
+    }
+
+    // Fallback: BIP derivation
     final butS = await deriveKeysWithPath(mnemonic, BipPaths.bip101);
     final butV = await deriveKeysWithPath(mnemonic, BipPaths.bip102);
 
     return {
       'spend_key': '0xS${butS['private_key']}',
       'view_key': '0xV${butV['private_key']}',
-      'primary_key': primary['private_key']!,
       'coin_type': '777',
-      'security': '512-bit CKS',
+      'security': '256-bit (Fallback)',
       'word_count': '24',
     };
   }
 
   /// Derive Vault keys (CKS-1024)
   static Future<Map<String, String>> deriveVaultKeys(String mnemonic) async {
+    // First, try Rust CKS Vault
+    final vaultKeys = await generateVaultKeys();
+    if (vaultKeys != null) {
+      return vaultKeys;
+    }
+
+    // Fallback: BIP derivation
     final vault = await deriveKeysWithPath(mnemonic, BipPaths.bip100);
     final butS = await deriveKeysWithPath(mnemonic, BipPaths.bip101);
     final butV = await deriveKeysWithPath(mnemonic, BipPaths.bip102);
@@ -78,7 +154,7 @@ class KeyEngine {
       'view_key': '0xV${butV['private_key']}',
       'vault_key': vault['private_key']!,
       'coin_type': '777',
-      'security': '1024-bit CKS Vault',
+      'security': '256-bit (Fallback)',
       'word_count': '24',
     };
   }
