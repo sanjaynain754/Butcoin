@@ -1,0 +1,122 @@
+name: BUT Network - Build & Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ==================== Rust Crypto Build ====================
+  rust-build:
+    name: Rust - Build & Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            but-crypto/target
+          key: rust-${{ runner.os }}-${{ hashFiles('but-crypto/Cargo.toml') }}
+
+      - name: Build but-crypto
+        run: |
+          cd but-crypto
+          cargo build --release
+          cargo test --release
+
+      - name: Run tests
+        run: |
+          cd but-crypto
+          cargo test --all
+
+  # ==================== Go P2P Build ====================
+  go-build:
+    name: Go - Build & Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Build but-p2p
+        run: |
+          cd but-p2p
+          go build -o but-p2p-node ./...
+
+      - name: Run tests
+        run: |
+          cd but-p2p
+          go test ./... -v
+
+  # ==================== Flutter Build ====================
+  flutter-build:
+    name: Flutter - Build APK
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            but-wallet/.dart_tool
+            but-wallet/build
+          key: flutter-${{ runner.os }}-${{ hashFiles('but-wallet/pubspec.yaml') }}
+
+      - name: Install dependencies
+        run: |
+          cd but-wallet
+          flutter pub get
+
+      - name: Analyze code
+        run: |
+          cd but-wallet
+          flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Build APK (Debug)
+        run: |
+          cd but-wallet
+          flutter build apk --debug
+
+      - name: Build APK (Release)
+        run: |
+          cd but-wallet
+          flutter build apk --release
+
+      - name: Upload APK (Debug)
+        uses: actions/upload-artifact@v3
+        with:
+          name: but-wallet-debug
+          path: but-wallet/build/app/outputs/flutter-apk/app-debug.apk
+
+      - name: Upload APK (Release)
+        uses: actions/upload-artifact@v3
+        with:
+          name: but-wallet-release
+          path: but-wallet/build/app/outputs/flutter-apk/app-release.apk
