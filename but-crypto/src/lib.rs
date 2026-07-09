@@ -1,44 +1,28 @@
 // BUT Network CKS - Cosmic Key Space
-// Quantum-resistant key generation & BUT-S/BUT-V derivation
+// Multi-level quantum-resistant cryptography
+// 
+// Modules:
+// - cks512: Standard 512-bit security
+// - cks1024: Ultra 1024-bit vault security
+// - hybrid: Classical + Post-Quantum hybrid layer
 
-use rand::RngCore;
-use sha2::Sha256;
-use hkdf::Hkdf;
-use zeroize::Zeroize;
-use serde::{Serialize, Deserialize};
+pub mod cks512;
+pub mod cks1024;
+pub mod hybrid;
 
-pub const SEED_SIZE: usize = 64;
-pub const SPEND_KEY_SIZE: usize = 32;
-pub const VIEW_KEY_SIZE: usize = 32;
+// Re-exports for easy access
+pub use cks512::StandardKeyPair;
+pub use cks1024::VaultKeyPair;
+pub use hybrid::{HybridSignature, HybridEncryptor, SecurityLevel};
 
-#[derive(Clone, Serialize, Deserialize)]
-pub struct CksKeyPair {
-    pub spend_key: [u8; SPEND_KEY_SIZE],
-    pub view_key: [u8; VIEW_KEY_SIZE],
-}
+/// Library version
+pub const VERSION: &str = "0.2.0";
 
-impl CksKeyPair {
-    pub fn generate() -> Self {
-        let mut seed = [0u8; SEED_SIZE];
-        rand::thread_rng().fill_bytes(&mut seed);
-        let pair = Self::from_master_seed(&seed);
-        seed.zeroize();
-        pair
-    }
-
-    pub fn from_master_seed(seed: &[u8; SEED_SIZE]) -> Self {
-        let hk = Hkdf::<Sha256>::new(None, seed);
-
-        let mut spend_key = [0u8; SPEND_KEY_SIZE];
-        hk.expand(b"BUT-Spend-Key", &mut spend_key)
-            .expect("HKDF expand failed for spend key");
-
-        let mut view_key = [0u8; VIEW_KEY_SIZE];
-        hk.expand(b"BUT-View-Key", &mut view_key)
-            .expect("HKDF expand failed for view key");
-
-        CksKeyPair { spend_key, view_key }
-    }
+/// Generate a complete wallet with both security levels
+pub fn generate_full_wallet() -> (StandardKeyPair, VaultKeyPair) {
+    let standard = StandardKeyPair::generate();
+    let vault = VaultKeyPair::generate();
+    (standard, vault)
 }
 
 #[cfg(test)]
@@ -46,19 +30,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_key_generation() {
-        let pair = CksKeyPair::generate();
-        assert_ne!(pair.spend_key, [0u8; 32]);
-        assert_ne!(pair.view_key, [0u8; 32]);
-        assert_ne!(pair.spend_key, pair.view_key);
+    fn test_full_wallet_generation() {
+        let (std, vault) = generate_full_wallet();
+        assert_ne!(std.spend_key, [0u8; 64]);
+        assert!(vault.verify_integrity());
     }
 
     #[test]
-    fn test_deterministic_derivation() {
-        let seed = [42u8; SEED_SIZE];
-        let pair1 = CksKeyPair::from_master_seed(&seed);
-        let pair2 = CksKeyPair::from_master_seed(&seed);
-        assert_eq!(pair1.spend_key, pair2.spend_key);
-        assert_eq!(pair1.view_key, pair2.view_key);
+    fn test_version() {
+        assert_eq!(VERSION, "0.2.0");
     }
-}
+    }
