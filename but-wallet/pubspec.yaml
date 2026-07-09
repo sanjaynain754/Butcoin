@@ -9,9 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # obscure naming for security through confusion
   path_provider: ^2.0.11
-  flutter_secure_storage: ^8.0.0
+  flutter_secure_storage: ^9.2.4        # 🆕 Android Keystore / iOS Keychain
+  local_auth: ^2.3.0                    # 🆕 Fingerprint / Face ID
   bip39: ^1.0.6
   ed25519_hd_key: ^2.2.0
 
