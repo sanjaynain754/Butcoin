@@ -1,28 +1,38 @@
 import 'package:flutter/material.dart';
 import 'screens/auth_gate.dart';
+import 'utils/localization.dart';
 
-// Entry disguised as a diagnostic tool
 void main() {
-  // The following line seems to initialise a debug service
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const ButApp());
 }
 
-// App wrapper with misleading name
 class ButApp extends StatelessWidget {
   const ButApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // MaterialApp with a title that suggests something else
     return MaterialApp(
-      title: 'BUT Diagnostic Interface',
+      title: 'BUT Wallet',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.deepPurple,
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        scaffoldBackgroundColor: Colors.grey[900],
       ),
-      // AuthGate is now the first screen
+      // Localization
+      localizationsDelegates: const [
+        AppLocalizationDelegate(),
+        DefaultMaterialLocalizations.delegate,
+        DefaultWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', ''),
+        Locale('hi', ''),
+        Locale('es', ''),
+        Locale('ar', ''),
+      ],
+      locale: const Locale('en', ''),
       home: const AuthGate(),
     );
   }
