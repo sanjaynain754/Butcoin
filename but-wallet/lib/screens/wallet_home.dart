@@ -6,6 +6,7 @@ import 'address_mapper.dart';
 import 'system_restore.dart';
 import 'send_screen.dart';
 import 'receive_screen.dart';
+import 'swap_screen.dart';
 
 class WalletHome extends StatefulWidget {
   const WalletHome({super.key});
@@ -172,13 +173,20 @@ class _WalletHomeState extends State<WalletHome> {
       context,
       MaterialPageRoute(builder: (context) => const SendScreen()),
     );
-    _loadBalance(); // Refresh balance after sending
+    _loadBalance();
   }
 
   void _openReceive() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ReceiveScreen()),
+    );
+  }
+
+  void _openSwap() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SwapScreen()),
     );
   }
 
@@ -254,14 +262,14 @@ class _WalletHomeState extends State<WalletHome> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Send & Receive Buttons
+                    // Send, Receive, Swap Buttons
                     Row(
                       children: [
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: _openSend,
-                            icon: const Icon(Icons.arrow_upward),
-                            label: const Text('Send'),
+                            icon: const Icon(Icons.arrow_upward, size: 18),
+                            label: const Text('Send', style: TextStyle(fontSize: 12)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.deepPurple,
                               minimumSize: const Size(0, 50),
@@ -271,14 +279,29 @@ class _WalletHomeState extends State<WalletHome> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 6),
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: _openReceive,
-                            icon: const Icon(Icons.arrow_downward),
-                            label: const Text('Receive'),
+                            icon: const Icon(Icons.arrow_downward, size: 18),
+                            label: const Text('Receive', style: TextStyle(fontSize: 12)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green[700],
+                              minimumSize: const Size(0, 50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _openSwap,
+                            icon: const Icon(Icons.swap_horiz, size: 18),
+                            label: const Text('Swap', style: TextStyle(fontSize: 12)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange[700],
                               minimumSize: const Size(0, 50),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -320,7 +343,7 @@ class _WalletHomeState extends State<WalletHome> {
                       ),
                     ],
 
-                    // Mnemonic Display (if generated)
+                    // Mnemonic Display
                     if (_generatedMnemonic != null) ...[
                       Card(
                         color: Colors.red[900],
