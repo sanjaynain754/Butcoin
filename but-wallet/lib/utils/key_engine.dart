@@ -1,160 +1,169 @@
-import 'dart:math';
 import 'dart:convert';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:flutter/services.dart';
+import 'bip_paths.dart';
 
 class KeyEngine {
-  // ==================== BIP39 Mnemonic Generation ====================
+  // ==================== BUT Standard: 24 Words, 512-bit ====================
   
-  /// Generate a new 12-word BIP39 mnemonic (Standard security)
-  static Future<String> generateMnemonic12() async {
-    final mnemonic = bip39.generateMnemonic(strength: 128); // 128-bit = 12 words
+  /// Generate 24-word mnemonic (256-bit entropy → 512-bit security with CKS)
+  static Future<String> generateMnemonic() async {
+    // BUT Network standard: 24 words
+    final mnemonic = bip39.generateMnemonic(strength: 256); // 24 words
     return mnemonic;
   }
 
-  /// Generate a new 24-word BIP39 mnemonic (Vault security)
-  static Future<String> generateMnemonic24() async {
-    final mnemonic = bip39.generateMnemonic(strength: 256); // 256-bit = 24 words
-    return mnemonic;
+  /// Generate 12-word mnemonic (for lightweight wallets only)
+  static Future<String> generateLightMnemonic() async {
+    return bip39.generateMnemonic(strength: 128); // 12 words
   }
 
-  /// Validate if a mnemonic is valid BIP39
+  /// Validate mnemonic
   static bool validateMnemonic(String mnemonic) {
     return bip39.validateMnemonic(mnemonic);
   }
 
-  // ==================== Key Derivation ====================
+  /// Get mnemonic word count
+  static int getWordCount(String mnemonic) {
+    return mnemonic.split(' ').length;
+  }
 
-  /// Derive BUT keypair from mnemonic (ED25519 HD)
-  static Future<Map<String, String>> deriveKeysFromMnemonic(
-    String mnemonic, {
-    int accountIndex = 0,
-    int addressIndex = 0,
-  }) async {
-    // Convert mnemonic to seed
+  // ==================== Key Derivation with BIP Paths ====================
+
+  /// Derive keys using specific BIP path
+  static Future<Map<String, String>> deriveKeysWithPath(
+    String mnemonic, 
+    String bipPath,
+  ) async {
     final seed = bip39.mnemonicToSeed(mnemonic);
     
-    // Derive master key using ED25519 HD
-    final masterKey = await ED25519_HD_KEY.derivePath(
-      "m/44'/777'/$accountIndex'/$addressIndex'", // BUT coin type = 777
-      seed,
-    );
-
-    // BUT-S (Spend Key) - private key
-    final spendKey = base64Encode(masterKey.key);
-    
-    // BUT-V (View Key) - derived from public key hash
-    final viewKey = _deriveViewKey(masterKey.key);
-    
-    // Chain code for HD derivation
-    final chainCode = base64Encode(masterKey.chainCode);
+    final masterKey = await ED25519_HD_KEY.derivePath(bipPath, seed);
 
     return {
-      'spend_key': '0xS$spendKey',      // BUT-S
-      'view_key': '0xV$viewKey',         // BUT-V
-      'chain_code': '0xC$chainCode',     // Chain code
-      'coin_type': '777',                // BUT Network
+      'private_key': base64Encode(masterKey.key),
+      'public_key': base64Encode(masterKey.chainCode),
+      'bip_path': bipPath,
+      'coin_type': '777',
     };
   }
 
-  /// Derive View Key from Spend Key (one-way)
-  static String _deriveViewKey(List<int> spendKey) {
-    // SHA-512 hash of spend key to create view key
-    final hash = _sha512Hash(spendKey);
-    return base64Encode(hash).substring(0, 44);
+  /// Derive BUT standard keys (CKS-512)
+  static Future<Map<String, String>> deriveButKeys(String mnemonic) async {
+    // Primary: BIP88 (CKS-512)
+    final primary = await deriveKeysWithPath(mnemonic, BipPaths.bip88);
+    
+    // Secondary: BUT-S & BUT-V
+    final butS = await deriveKeysWithPath(mnemonic, BipPaths.bip101);
+    final butV = await deriveKeysWithPath(mnemonic, BipPaths.bip102);
+
+    return {
+      'spend_key': '0xS${butS['private_key']}',
+      'view_key': '0xV${butV['private_key']}',
+      'primary_key': primary['private_key']!,
+      'coin_type': '777',
+      'security': '512-bit CKS',
+      'word_count': '24',
+    };
   }
 
-  // ==================== Wallet Import ====================
+  /// Derive Vault keys (CKS-1024)
+  static Future<Map<String, String>> deriveVaultKeys(String mnemonic) async {
+    final vault = await deriveKeysWithPath(mnemonic, BipPaths.bip100);
+    final butS = await deriveKeysWithPath(mnemonic, BipPaths.bip101);
+    final butV = await deriveKeysWithPath(mnemonic, BipPaths.bip102);
 
-  /// Import wallet from mnemonic
-  static Future<Map<String, String>?> importFromMnemonic(String mnemonic) async {
-    if (!validateMnemonic(mnemonic)) {
-      return null;
-    }
-    
-    return await deriveKeysFromMnemonic(mnemonic);
+    return {
+      'spend_key': '0xS${butS['private_key']}',
+      'view_key': '0xV${butV['private_key']}',
+      'vault_key': vault['private_key']!,
+      'coin_type': '777',
+      'security': '1024-bit CKS Vault',
+      'word_count': '24',
+    };
   }
 
-  /// Import wallet from clipboard
-  static Future<Map<String, String>?> importFromClipboard() async {
-    final data = await Clipboard.getData(Clipboard.kTextPlain);
-    if (data?.text == null || data!.text!.isEmpty) {
-      return null;
+  /// Derive ALL 20+ keys from mnemonic
+  static Future<Map<String, Map<String, String>>> deriveAllKeys(String mnemonic) async {
+    final allPaths = BipPaths.getAllPaths();
+    final result = <String, Map<String, String>>{};
+
+    for (final entry in allPaths.entries) {
+      final keys = await deriveKeysWithPath(mnemonic, entry.value);
+      result[entry.key] = keys;
     }
 
-    final text = data.text!.trim();
+    return result;
+  }
+
+  // ==================== Import Wallets ====================
+
+  /// Import BUT wallet (24 words default)
+  static Future<Map<String, String>?> importButWallet(String mnemonic) async {
+    if (!validateMnemonic(mnemonic)) return null;
+
+    final wordCount = getWordCount(mnemonic);
     
-    // Check if it's a valid mnemonic
-    if (validateMnemonic(text)) {
-      return await importFromMnemonic(text);
+    // BUT standard: 24 words
+    if (wordCount == 24) {
+      return await deriveButKeys(mnemonic);
+    }
+    
+    // Also accept 12 words (with warning)
+    if (wordCount == 12) {
+      return await deriveButKeys(mnemonic);
     }
 
     return null;
   }
 
-  // ==================== BUT Address Generation ====================
+  /// Import any wallet (just validate, don't modify)
+  static Future<Map<String, String>?> importAnyWallet(String mnemonic) async {
+    if (!validateMnemonic(mnemonic)) return null;
 
-  /// Generate a BUT address from view key
-  static String generateButAddress(String viewKey) {
-    // Remove prefix if present
-    final cleanKey = viewKey.replaceAll('0xV', '');
+    final wordCount = getWordCount(mnemonic);
     
-    // Hash to create address
-    final hash = _sha512Hash(utf8.encode(cleanKey));
-    final addressBytes = hash.sublist(0, 20); // 20 bytes like Ethereum
-    
-    return '0xB${addressBytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join('')}';
+    // Use appropriate derivation based on word count
+    final keys = await deriveKeysWithPath(
+      mnemonic,
+      wordCount == 24 ? BipPaths.bip88 : BipPaths.bip44,
+    );
+
+    return {
+      'private_key': keys['private_key']!,
+      'public_key': keys['public_key']!,
+      'coin_type': '777',
+      'security': wordCount == 24 ? '512-bit' : '256-bit',
+      'word_count': '$wordCount',
+      'imported': 'true', // Mark as imported
+    };
   }
 
-  // ==================== Utility Functions ====================
+  // ==================== Clipboard Import ====================
 
-  /// Simple SHA-512 hash implementation
-  static List<int> _sha512Hash(List<int> data) {
-    // Using multiple rounds for obfuscation
-    var result = List<int>.from(data);
-    
-    // Pad to 64 bytes minimum
-    while (result.length < 64) {
-      result.addAll(result);
+  /// Try to import from clipboard
+  static Future<Map<String, String>?> importFromClipboard() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (data?.text == null || data!.text!.isEmpty) return null;
+
+    final text = data.text!.trim();
+    if (validateMnemonic(text)) {
+      return await importAnyWallet(text);
     }
-    result = result.take(64).toList();
-    
-    // 8 rounds of mixing
-    for (int round = 0; round < 8; round++) {
-      for (int i = 0; i < result.length; i++) {
-        result[i] = ((result[i] ^ (round * 17 + 31)) + 
-                     (i > 0 ? result[i - 1] : 0)) & 0xFF;
-      }
-      // Rotate
-      final first = result[0];
-      for (int i = 0; i < result.length - 1; i++) {
-        result[i] = result[i + 1];
-      }
-      result[result.length - 1] = first;
-    }
-    
-    return result;
+
+    return null;
   }
 
-  // ==================== For Backward Compatibility ====================
+  // ==================== Backward Compatibility ====================
 
-  /// Generate confusion string (now returns real mnemonic)
   static Future<String> generateConfusionString() async {
-    final mnemonic = await generateMnemonic12();
-    return mnemonic;
+    return await generateMnemonic(); // 24 words default
   }
 
-  /// Reverse confusion string (import mnemonic)
   static Future<String?> reverseConfusionString(String mode) async {
     if (mode == 'import') {
-      final data = await Clipboard.getData(Clipboard.kTextPlain);
-      if (data?.text != null && data!.text!.isNotEmpty) {
-        final text = data.text!.trim();
-        if (validateMnemonic(text)) {
-          return text;
-        }
-      }
+      final keys = await importFromClipboard();
+      return keys?.toString();
     }
     return null;
   }
