@@ -7,6 +7,8 @@ import 'system_restore.dart';
 import 'send_screen.dart';
 import 'receive_screen.dart';
 import 'swap_screen.dart';
+import 'staking_screen.dart';
+import 'nft_screen.dart';
 
 class WalletHome extends StatefulWidget {
   const WalletHome({super.key});
@@ -190,6 +192,20 @@ class _WalletHomeState extends State<WalletHome> {
     );
   }
 
+  void _openStaking() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const StakingScreen()),
+    );
+  }
+
+  void _openNFT() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NFTScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -216,9 +232,7 @@ class _WalletHomeState extends State<WalletHome> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: () async {
-                await _loadBalance();
-              },
+              onRefresh: () async => _loadBalance(),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16.0),
@@ -232,118 +246,63 @@ class _WalletHomeState extends State<WalletHome> {
                         padding: const EdgeInsets.all(20.0),
                         child: Column(
                           children: [
-                            const Text(
-                              'Total Balance',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                              ),
-                            ),
+                            const Text('Total Balance', style: TextStyle(color: Colors.white70, fontSize: 14)),
                             const SizedBox(height: 8),
-                            Text(
-                              _balance,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            Text(_balance, style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 4),
-                            Text(
-                              'BUT Network',
-                              style: TextStyle(
-                                color: Colors.deepPurple[200],
-                                fontSize: 12,
-                              ),
-                            ),
+                            Text('BUT Network', style: TextStyle(color: Colors.deepPurple[200], fontSize: 12)),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
 
-                    // Send, Receive, Swap Buttons
+                    // Action Buttons Row 1: Send, Receive, Swap, Stake
                     Row(
                       children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _openSend,
-                            icon: const Icon(Icons.arrow_upward, size: 18),
-                            label: const Text('Send', style: TextStyle(fontSize: 12)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.deepPurple,
-                              minimumSize: const Size(0, 50),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _openReceive,
-                            icon: const Icon(Icons.arrow_downward, size: 18),
-                            label: const Text('Receive', style: TextStyle(fontSize: 12)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green[700],
-                              minimumSize: const Size(0, 50),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _openSwap,
-                            icon: const Icon(Icons.swap_horiz, size: 18),
-                            label: const Text('Swap', style: TextStyle(fontSize: 12)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange[700],
-                              minimumSize: const Size(0, 50),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ),
+                        _buildActionButton(Icons.arrow_upward, 'Send', Colors.deepPurple, _openSend),
+                        const SizedBox(width: 4),
+                        _buildActionButton(Icons.arrow_downward, 'Receive', Colors.green[700]!, _openReceive),
+                        const SizedBox(width: 4),
+                        _buildActionButton(Icons.swap_horiz, 'Swap', Colors.orange[700]!, _openSwap),
+                        const SizedBox(width: 4),
+                        _buildActionButton(Icons.lock, 'Stake', Colors.amber[700]!, _openStaking),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Action Buttons Row 2: NFT, More
+                    Row(
+                      children: [
+                        _buildActionButton(Icons.image, 'NFT', Colors.pink[700]!, _openNFT),
+                        const SizedBox(width: 4),
+                        _buildActionButton(Icons.more_horiz, 'More', Colors.grey[700]!, () {}),
+                        const SizedBox(width: 4),
+                        const Spacer(flex: 2),
                       ],
                     ),
                     const SizedBox(height: 24),
 
-                    // Wallet Actions
+                    // Wallet Setup
                     if (_walletKeys == null && _generatedMnemonic == null) ...[
-                      const Text(
-                        'Setup Your Wallet',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      const Text('Setup Your Wallet', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 12),
                       ElevatedButton.icon(
                         onPressed: _generateNewWallet,
                         icon: const Icon(Icons.add_circle),
                         label: const Text('Create New Wallet'),
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 50),
-                        ),
+                        style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
                       ),
                       const SizedBox(height: 8),
                       OutlinedButton.icon(
                         onPressed: _importWallet,
                         icon: const Icon(Icons.download),
                         label: const Text('Import Existing Wallet'),
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 50),
-                        ),
+                        style: OutlinedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
                       ),
                     ],
 
-                    // Mnemonic Display
+                    // Mnemonic
                     if (_generatedMnemonic != null) ...[
                       Card(
                         color: Colors.red[900],
@@ -355,31 +314,14 @@ class _WalletHomeState extends State<WalletHome> {
                                 children: [
                                   Icon(Icons.warning, color: Colors.yellow),
                                   SizedBox(width: 8),
-                                  Text(
-                                    'SAVE YOUR RECOVERY PHRASE',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                  Text('SAVE YOUR RECOVERY PHRASE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                 ],
                               ),
                               const SizedBox(height: 12),
                               Container(
                                 padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.black54,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  _generatedMnemonic!,
-                                  style: const TextStyle(
-                                    color: Colors.greenAccent,
-                                    fontFamily: 'monospace',
-                                    fontSize: 14,
-                                    height: 1.5,
-                                  ),
-                                ),
+                                decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(8)),
+                                child: Text(_generatedMnemonic!, style: const TextStyle(color: Colors.greenAccent, fontFamily: 'monospace', fontSize: 14, height: 1.5)),
                               ),
                             ],
                           ),
@@ -397,13 +339,7 @@ class _WalletHomeState extends State<WalletHome> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Wallet Keys:',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              const Text('Wallet Keys:', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
                               const SizedBox(height: 8),
                               if (_walletKeys!.containsKey('spend_key'))
                                 _buildKeyRow('BUT-S', _walletKeys!['spend_key']!),
@@ -421,23 +357,38 @@ class _WalletHomeState extends State<WalletHome> {
     );
   }
 
+  Widget _buildActionButton(IconData icon, String label, Color color, VoidCallback onPressed) {
+    return Expanded(
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          minimumSize: const Size(0, 48),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 20, color: Colors.white),
+            const SizedBox(height: 2),
+            Text(label, style: const TextStyle(fontSize: 10, color: Colors.white)),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildKeyRow(String label, String key) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4.0),
       child: Row(
         children: [
-          Text(
-            '$label: ',
-            style: const TextStyle(color: Colors.white54, fontSize: 11),
-          ),
+          Text('$label: ', style: const TextStyle(color: Colors.white54, fontSize: 11)),
           Expanded(
             child: Text(
               key.length > 30 ? '${key.substring(0, 30)}...' : key,
-              style: const TextStyle(
-                color: Colors.cyanAccent,
-                fontFamily: 'monospace',
-                fontSize: 11,
-              ),
+              style: const TextStyle(color: Colors.cyanAccent, fontFamily: 'monospace', fontSize: 11),
             ),
           ),
         ],
