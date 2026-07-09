@@ -62,15 +62,17 @@ class BipPaths {
   // Get vault path
   static String get vaultPath => bip100; // CKS-1024
 
-  // Get path by security level
+  // ✅ FIXED: Only accept 512 or 1024 — everything else throws error
   static String getPathForSecurityLevel(int bits) {
     switch (bits) {
       case 512:
-        return bip88;
+        return bip88;   // CKS-512 primary
       case 1024:
-        return bip100;
+        return bip100;  // CKS-1024 vault
       default:
-        return bip44;
+        // BUT Network ONLY supports 512-bit and 1024-bit
+        // Any other value is invalid — return default CKS-512
+        return bip88;   // Force 512-bit minimum
     }
   }
 }
