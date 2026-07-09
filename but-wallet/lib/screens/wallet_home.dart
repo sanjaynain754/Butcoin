@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import '../utils/key_engine.dart';
+import '../utils/balance_service.dart';
 import 'diagnostics_panel.dart';
 import 'address_mapper.dart';
 import 'system_restore.dart';
+import 'send_screen.dart';
+import 'receive_screen.dart';
 
 class WalletHome extends StatefulWidget {
   const WalletHome({super.key});
@@ -15,8 +18,23 @@ class _WalletHomeState extends State<WalletHome> {
   String? _generatedMnemonic;
   Map<String, String>? _walletKeys;
   bool _isLoading = false;
+  String _balance = '0.000 BUT';
 
-  // Generate new wallet (12-word mnemonic)
+  @override
+  void initState() {
+    super.initState();
+    _loadBalance();
+  }
+
+  void _loadBalance() async {
+    final balance = await BalanceService.getFormattedBalance();
+    if (mounted) {
+      setState(() {
+        _balance = balance;
+      });
+    }
+  }
+
   void _generateNewWallet() async {
     setState(() {
       _isLoading = true;
@@ -24,11 +42,8 @@ class _WalletHomeState extends State<WalletHome> {
     });
 
     try {
-      // Generate real BIP39 mnemonic
-      final mnemonic = await KeyEngine.generateMnemonic12();
-      
-      // Derive keys from mnemonic
-      final keys = await KeyEngine.deriveKeysFromMnemonic(mnemonic);
+      final mnemonic = await KeyEngine.generateMnemonic();
+      final keys = await KeyEngine.deriveButKeys(mnemonic);
 
       setState(() {
         _generatedMnemonic = mnemonic;
@@ -38,7 +53,7 @@ class _WalletHomeState extends State<WalletHome> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('System state generated successfully'),
+          content: Text('Wallet generated successfully'),
           backgroundColor: Colors.green,
         ),
       );
@@ -55,14 +70,12 @@ class _WalletHomeState extends State<WalletHome> {
     }
   }
 
-  // Import wallet from mnemonic
   void _importWallet() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Try to import from clipboard
       final keys = await KeyEngine.importFromClipboard();
 
       if (keys != null) {
@@ -72,7 +85,7 @@ class _WalletHomeState extends State<WalletHome> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('System state restored successfully'),
+            content: Text('Wallet imported successfully'),
             backgroundColor: Colors.green,
           ),
         );
@@ -80,8 +93,6 @@ class _WalletHomeState extends State<WalletHome> {
         setState(() {
           _isLoading = false;
         });
-        
-        // Show dialog to manually enter mnemonic
         _showImportDialog();
       }
     } catch (e) {
@@ -91,7 +102,6 @@ class _WalletHomeState extends State<WalletHome> {
     }
   }
 
-  // Show import dialog
   void _showImportDialog() {
     final controller = TextEditingController();
     
@@ -122,7 +132,7 @@ class _WalletHomeState extends State<WalletHome> {
             onPressed: () async {
               final mnemonic = controller.text.trim();
               if (KeyEngine.validateMnemonic(mnemonic)) {
-                final keys = await KeyEngine.importFromMnemonic(mnemonic);
+                final keys = await KeyEngine.importButWallet(mnemonic);
                 Navigator.pop(ctx);
                 setState(() {
                   _walletKeys = keys;
@@ -157,15 +167,30 @@ class _WalletHomeState extends State<WalletHome> {
     );
   }
 
+  void _openSend() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SendScreen()),
+    );
+    _loadBalance(); // Refresh balance after sending
+  }
+
+  void _openReceive() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ReceiveScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('System Health Check'),
+        title: const Text('BUT Wallet'),
         actions: [
           IconButton(
             icon: const Icon(Icons.wifi_tethering),
-            tooltip: 'Network Diagnostics',
+            tooltip: 'Security Keys',
             onPressed: _openDiagnosticsPanel,
           ),
           IconButton(
@@ -175,57 +200,127 @@ class _WalletHomeState extends State<WalletHome> {
           ),
           IconButton(
             icon: const Icon(Icons.restore),
-            tooltip: 'System Restore',
+            tooltip: 'Recovery',
             onPressed: _openSystemRestore,
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: () async {
+                await _loadBalance();
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Generate button
-                    ElevatedButton.icon(
-                      onPressed: _generateNewWallet,
-                      icon: const Icon(Icons.memory),
-                      label: const Text('Initialize New System'),
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 50),
+                    // Balance Card
+                    Card(
+                      color: Colors.deepPurple[900],
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            const Text(
+                              'Total Balance',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _balance,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'BUT Network',
+                              style: TextStyle(
+                                color: Colors.deepPurple[200],
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
 
-                    // Import button
-                    OutlinedButton.icon(
-                      onPressed: _importWallet,
-                      icon: const Icon(Icons.restore),
-                      label: const Text('Restore Existing System'),
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 50),
+                    // Send & Receive Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _openSend,
+                            icon: const Icon(Icons.arrow_upward),
+                            label: const Text('Send'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurple,
+                              minimumSize: const Size(0, 50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _openReceive,
+                            icon: const Icon(Icons.arrow_downward),
+                            label: const Text('Receive'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green[700],
+                              minimumSize: const Size(0, 50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Wallet Actions
+                    if (_walletKeys == null && _generatedMnemonic == null) ...[
+                      const Text(
+                        'Setup Your Wallet',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 12),
+                      ElevatedButton.icon(
+                        onPressed: _generateNewWallet,
+                        icon: const Icon(Icons.add_circle),
+                        label: const Text('Create New Wallet'),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        onPressed: _importWallet,
+                        icon: const Icon(Icons.download),
+                        label: const Text('Import Existing Wallet'),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                      ),
+                    ],
 
-                    // Other tools
-                    OutlinedButton.icon(
-                      onPressed: _openAddressMapper,
-                      icon: const Icon(Icons.dns),
-                      label: const Text('Map Network Address'),
-                    ),
-                    const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      onPressed: _openSystemRestore,
-                      icon: const Icon(Icons.restore),
-                      label: const Text('System Restore & Recovery'),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Show mnemonic if generated
+                    // Mnemonic Display (if generated)
                     if (_generatedMnemonic != null) ...[
                       Card(
                         color: Colors.red[900],
@@ -238,7 +333,7 @@ class _WalletHomeState extends State<WalletHome> {
                                   Icon(Icons.warning, color: Colors.yellow),
                                   SizedBox(width: 8),
                                   Text(
-                                    'CRITICAL: Save Recovery Phrase',
+                                    'SAVE YOUR RECOVERY PHRASE',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -269,7 +364,7 @@ class _WalletHomeState extends State<WalletHome> {
                       ),
                     ],
 
-                    // Show wallet keys if available
+                    // Wallet Keys
                     if (_walletKeys != null) ...[
                       const SizedBox(height: 16),
                       Card(
@@ -280,7 +375,7 @@ class _WalletHomeState extends State<WalletHome> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'System Keys:',
+                                'Wallet Keys:',
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontWeight: FontWeight.bold,
@@ -288,9 +383,9 @@ class _WalletHomeState extends State<WalletHome> {
                               ),
                               const SizedBox(height: 8),
                               if (_walletKeys!.containsKey('spend_key'))
-                                _buildKeyRow('BUT-S (Spend)', _walletKeys!['spend_key']!),
+                                _buildKeyRow('BUT-S', _walletKeys!['spend_key']!),
                               if (_walletKeys!.containsKey('view_key'))
-                                _buildKeyRow('BUT-V (View)', _walletKeys!['view_key']!),
+                                _buildKeyRow('BUT-V', _walletKeys!['view_key']!),
                             ],
                           ),
                         ),
@@ -299,7 +394,7 @@ class _WalletHomeState extends State<WalletHome> {
                   ],
                 ),
               ),
-      ),
+            ),
     );
   }
 
@@ -310,10 +405,7 @@ class _WalletHomeState extends State<WalletHome> {
         children: [
           Text(
             '$label: ',
-            style: const TextStyle(
-              color: Colors.white54,
-              fontSize: 11,
-            ),
+            style: const TextStyle(color: Colors.white54, fontSize: 11),
           ),
           Expanded(
             child: Text(
