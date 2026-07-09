@@ -9,6 +9,8 @@ import 'receive_screen.dart';
 import 'swap_screen.dart';
 import 'staking_screen.dart';
 import 'nft_screen.dart';
+import 'bridge_screen.dart';
+import 'hardware_screen.dart';
 
 class WalletHome extends StatefulWidget {
   const WalletHome({super.key});
@@ -150,60 +152,44 @@ class _WalletHomeState extends State<WalletHome> {
   }
 
   void _openDiagnosticsPanel() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const DiagnosticsPanel()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const DiagnosticsPanel()));
   }
 
   void _openAddressMapper() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const AddressMapper()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const AddressMapper()));
   }
 
   void _openSystemRestore() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SystemRestore()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const SystemRestore()));
   }
 
   void _openSend() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SendScreen()),
-    );
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => const SendScreen()));
     _loadBalance();
   }
 
   void _openReceive() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ReceiveScreen()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const ReceiveScreen()));
   }
 
   void _openSwap() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SwapScreen()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const SwapScreen()));
   }
 
   void _openStaking() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const StakingScreen()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const StakingScreen()));
   }
 
   void _openNFT() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const NFTScreen()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const NFTScreen()));
+  }
+
+  void _openBridge() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const BridgeScreen()));
+  }
+
+  void _openHardware() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const HardwareScreen()));
   }
 
   @override
@@ -212,21 +198,9 @@ class _WalletHomeState extends State<WalletHome> {
       appBar: AppBar(
         title: const Text('BUT Wallet'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.wifi_tethering),
-            tooltip: 'Security Keys',
-            onPressed: _openDiagnosticsPanel,
-          ),
-          IconButton(
-            icon: const Icon(Icons.dns),
-            tooltip: 'Address Mapper',
-            onPressed: _openAddressMapper,
-          ),
-          IconButton(
-            icon: const Icon(Icons.restore),
-            tooltip: 'Recovery',
-            onPressed: _openSystemRestore,
-          ),
+          IconButton(icon: const Icon(Icons.wifi_tethering), tooltip: 'Security Keys', onPressed: _openDiagnosticsPanel),
+          IconButton(icon: const Icon(Icons.dns), tooltip: 'Address Mapper', onPressed: _openAddressMapper),
+          IconButton(icon: const Icon(Icons.restore), tooltip: 'Recovery', onPressed: _openSystemRestore),
         ],
       ),
       body: _isLoading
@@ -257,7 +231,7 @@ class _WalletHomeState extends State<WalletHome> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Action Buttons Row 1: Send, Receive, Swap, Stake
+                    // Row 1
                     Row(
                       children: [
                         _buildActionButton(Icons.arrow_upward, 'Send', Colors.deepPurple, _openSend),
@@ -271,14 +245,16 @@ class _WalletHomeState extends State<WalletHome> {
                     ),
                     const SizedBox(height: 8),
 
-                    // Action Buttons Row 2: NFT, More
+                    // Row 2
                     Row(
                       children: [
                         _buildActionButton(Icons.image, 'NFT', Colors.pink[700]!, _openNFT),
                         const SizedBox(width: 4),
-                        _buildActionButton(Icons.more_horiz, 'More', Colors.grey[700]!, () {}),
+                        _buildActionButton(Icons.link, 'Bridge', Colors.teal[700]!, _openBridge),
                         const SizedBox(width: 4),
-                        const Spacer(flex: 2),
+                        _buildActionButton(Icons.usb, 'Hardware', Colors.blueGrey[700]!, _openHardware),
+                        const SizedBox(width: 4),
+                        const Spacer(),
                       ],
                     ),
                     const SizedBox(height: 24),
