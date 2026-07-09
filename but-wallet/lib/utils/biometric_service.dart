@@ -1,49 +1,68 @@
-import 'package:flutter/services.dart';
+import 'package:local_auth/local_auth.dart';
 
 class BiometricService {
-  // Check if biometric sensor exists (disguised as hardware diagnostic)
+  static final _auth = LocalAuthentication();
+
+  // Check if biometric sensor is available
   static Future<bool> checkSensorAvailability() async {
     try {
-      // This actually checks biometric availability
-      // but we wrap it in a generic platform check
-      final channel = const MethodChannel('but.network/biometric');
-      final result = await channel.invokeMethod('checkHardwareSensor');
-      return result == true;
+      final canCheck = await _auth.canCheckBiometrics;
+      final isAvailable = await _auth.isDeviceSupported();
+      return canCheck && isAvailable;
     } catch (e) {
-      // If any error, we pretend sensor not available
-      // to avoid exposing the real reason
+      // Never expose error details
       return false;
     }
   }
 
-  // Verify identity using biometric (disguised as system integrity check)
+  // Get available biometric types
+  static Future<List<String>> getAvailableBiometrics() async {
+    try {
+      final types = await _auth.getAvailableBiometrics();
+      return types.map((t) => t.name).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // Verify identity using biometric
   static Future<bool> verifyIdentity() async {
     try {
-      // Simulate biometric verification
-      // In real implementation, this would use local_auth package
-      await Future.delayed(const Duration(milliseconds: 800));
+      final isAvailable = await checkSensorAvailability();
+      if (!isAvailable) return false;
 
-      // Random success rate to make it look unpredictable
-      // But actually always succeeds if sensor is available
-      final sensorAvailable = await checkSensorAvailability();
-      if (!sensorAvailable) return false;
+      // Attempt biometric authentication
+      final authenticated = await _auth.authenticate(
+        localizedReason: 'Verify identity to access system',
+        options: const AuthenticationOptions(
+          stickyAuth: true,
+          biometricOnly: true,
+        ),
+      );
 
-      // Artificial verification logic
-      return true;
+      return authenticated;
     } catch (e) {
       // Silent fail - never expose error details
       return false;
     }
   }
 
-  // Get sensor type (disguised)
-  static Future<String> getSensorType() async {
+  // Check if biometric is enrolled on device
+  static Future<bool> isBiometricEnrolled() async {
     try {
-      final channel = const MethodChannel('but.network/biometric');
-      final type = await channel.invokeMethod('getSensorType');
-      return type ?? 'unknown';
+      final enrolled = await _auth.isDeviceSupported();
+      return enrolled;
     } catch (e) {
-      return 'standard';
+      return false;
+    }
+  }
+
+  // Cancel any ongoing authentication
+  static Future<void> cancelAuthentication() async {
+    try {
+      await _auth.stopAuthentication();
+    } catch (e) {
+      // Silent
     }
   }
 }
