@@ -1,0 +1,18 @@
+[package]
+name = "but-random"
+version = "0.1.0"
+edition = "2021"
+description = "BUT Network QRN - Quantum Random Number Generator"
+
+[dependencies]
+rand = "0.8"
+sha2 = "0.10"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+hex = "0.4"
+zeroize = { version = "1", features = ["derive"] }
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true
