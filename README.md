@@ -1,63 +1,115 @@
-# 🚀 BUT Network — Blockchain Universe Technology
-
-### *जहाँ भविष्य की मुद्रा बनती है*
-
-[![License](https://img.shields.io/badge/License-MIT%20%2B%20Apache--2.0-blue)](LICENSE)
-[![Rust](https://img.shields.io/badge/Rust-1.70%2B-orange)](https://www.rust-lang.org)
-[![Go](https://img.shields.io/badge/Go-1.21%2B-00ADD8)](https://go.dev)
-[![C++](https://img.shields.io/badge/C%2B%2B-20-blue)](https://isocpp.org)
-[![Flutter](https://img.shields.io/badge/Flutter-3.0%2B-02569B)](https://flutter.dev)
+# 🗺️ BUT Network रोडमैप
 
 ---
 
-## 🔥 परिचय
+## ✅ Phase 1: Foundation (पूर्ण — July 2026)
 
-**BUT Network** बिटकॉइन का क्वांटम-प्रतिरोधी, मोबाइल-फर्स्ट, और पर्यावरण-अनुकूल विकल्प है।
+### Core Infrastructure
+| Component | Language | Status |
+|-----------|----------|--------|
+| CKS-512 Cryptography | Rust | ✅ |
+| CKS-1024 Vault | Rust | ✅ |
+| Hybrid Crypto (Classical + PQ) | Rust | ✅ |
+| P2P Networking | Go | ✅ |
+| Noise IK Handshake | Go | ✅ |
+| Mirror Shield | Go | ✅ |
+| Code Abyss | Go | ✅ |
+| Onion Routing | Go | ✅ |
+| Blockchain Core | C++ | ✅ |
+| QR Merkle Tree | C++ | ✅ |
+| Proof-of-Connection | C++ | ✅ |
+| Validator Rewards | C++ | ✅ |
 
-### खासियत:
-- 🔒 **512-bit & 1024-bit** क्वांटम-प्रतिरोधी सिक्योरिटी
-- 📱 **मोबाइल माइनिंग** — Proof-of-Connection
-- 👁️ **BUT-S/BUT-V** डुअल की (गोपनीयता + ऑडिटेबल)
-- 🌿 **ग्रीन** — ज़ीरो अतिरिक्त बिजली
-- 🆓 **Free Token Launch** — कोई भी अपना टोकन बनाए
-- 👨‍👩‍👧‍👦 **Social Recovery** — 4 गार्जियन
-- 🌐 **but://username** — UPI जैसी सरलता
+### Mobile Wallet
+| Feature | Status |
+|---------|--------|
+| PIN + Biometric Auth | ✅ |
+| Secure Storage | ✅ |
+| 24-Word Mnemonic | ✅ |
+| 20+ BIP Paths | ✅ |
+| Send/Receive BUT | ✅ |
+| Swap | ✅ |
+| Staking (5%-20% APY) | ✅ |
+| NFT Gallery | ✅ |
+| Custom Token System | ✅ |
+| Cross-chain Bridge | ✅ |
+| Hardware Wallet Support | ✅ |
+| Multi-language (4+) | ✅ |
+| Social Recovery | ✅ |
+| but:// Username System | ✅ |
+
+### Advanced Security Layers (NEW)
+| Code | Layer | Language | Status |
+|------|-------|----------|--------|
+| VLT | MPC Key Sharding (3-of-5) | C++ | ✅ |
+| ZKF | Zero-Knowledge Proofs | C++ | ✅ |
+| AIS | AI Shield (Behavior Analysis) | C++ | ✅ |
+| QSH | Post-Quantum Signatures | Rust | ✅ |
+| TEX | Trusted Execution Environment | C++ | ✅ |
+| TLK | Time-lock Encryption | C++ | ✅ |
+| DID | Decentralized Identity | C++ | ✅ |
+| AIR | Air-gapped Signing | C++ | ✅ |
+| QRN | Quantum Random Numbers | Rust | ✅ |
 
 ---
 
-## 💰 BUT Currency
+## 🔄 Phase 2: Testnet Launch (Q3 2026)
 
-| यूनिट | मान |
-|-------|-----|
-| 1 BUT | = 1,000 Bites |
-| Total Supply | 21,000,000 BUT |
-| Fee | Bites में (1 Bite से) |
-
----
-
-## 🏗️ स्ट्रक्चर
-
-| फ़ोल्डर | भाषा | काम |
-|---------|------|-----|
-| `but-crypto/` | Rust | CKS-512, CKS-1024, Hybrid |
-| `but-p2p/` | Go | P2P, Noise, Shield |
-| `but-core/` | C++ | Blockchain, Merkle |
-| `but-consensus/` | C++ | Proof-of-Connection |
-| `but-wallet/` | Flutter | Mobile Wallet |
+| Task | Status |
+|------|--------|
+| Testnet Deployment | ⏳ Planned |
+| Rust FFI Integration | ⏳ Planned |
+| C++ Build Fix & CI/CD | ⏳ Planned |
+| External Security Audit | ⏳ Planned |
+| Bug Bounty Program | ⏳ Planned |
+| F-Droid Publishing | ⏳ Planned |
+| Community Building | ⏳ Planned |
 
 ---
 
-## 🚀 जल्दी शुरू करें
+## 🎯 Phase 3: Mainnet & Growth (Q4 2026)
 
-```bash
-git clone https://github.com/sanjaynain754/Butcoin.git
-cd Butcoin
+| Task | Status |
+|------|--------|
+| Mainnet Launch | ⏳ Planned |
+| Exchange Listing | ⏳ Planned |
+| Mobile Mining Live | ⏳ Planned |
+| Governance System | ⏳ Planned |
+| Enterprise Support | ⏳ Planned |
 
-# Rust
-cd but-crypto && cargo build --release
+---
 
-# Go
-cd but-p2p && go build
+## 🚀 Phase 4: Global Adoption (2027)
 
-# Flutter
-cd but-wallet && flutter pub get && flutter run
+| Task | Status |
+|------|--------|
+| Full Post-Quantum (Dilithium/Kyber) | ⏳ Planned |
+| Cross-chain Interoperability | ⏳ Planned |
+| Formal Verification | ⏳ Planned |
+| Hardware Security Module (HSM) | ⏳ Planned |
+| Satellite Node Network | ⏳ Planned |
+
+---
+
+## 🔮 Phase 5: Beyond (2028+)
+
+| Task | Status |
+|------|--------|
+| AI-Enhanced Security | 🔮 Vision |
+| Quantum Internet Ready | 🔮 Vision |
+| Interplanetary Blockchain | 🔮 Vision |
+| Decentralized AI Governance | 🔮 Vision |
+
+---
+
+## 📊 Progress Tracker
+
+- **Phase 1:** ████████████████████ **100% Complete** ✅
+- **Phase 2:** ████░░░░░░░░░░░░░░░░ **20%** (Testnet Prep)
+- **Phase 3:** ░░░░░░░░░░░░░░░░░░░░ **0%**
+- **Phase 4:** ░░░░░░░░░░░░░░░░░░░░ **0%**
+- **Phase 5:** ░░░░░░░░░░░░░░░░░░░░ **0%**
+
+---
+
+*Last Updated: July 10, 2026*
