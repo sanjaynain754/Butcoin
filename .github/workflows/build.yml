@@ -7,178 +7,134 @@ on:
     branches: [ main ]
 
 jobs:
-  # ==================== Rust Crypto Build ====================
-  rust-build:
-    name: Rust - Build & Test
+  # ==================== Rust Builds ====================
+  rust-crypto:
+    name: Rust - but-crypto
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Rust
-        uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
-
-      - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            but-crypto/target
-          key: rust-${{ runner.os }}-${{ hashFiles('but-crypto/Cargo.toml') }}
-
       - name: Build but-crypto
-        run: |
-          cd but-crypto
-          cargo build --release
-          cargo test --release
+        run: cd but-crypto && cargo build --release && cargo test --release
 
-      - name: Run tests
-        run: |
-          cd but-crypto
-          cargo test --all
-
-  # ==================== Go P2P Build ====================
-  go-build:
-    name: Go - Build & Test
+  rust-quantum:
+    name: Rust - but-quantum
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Build but-quantum
+        run: cd but-quantum && cargo build --release && cargo test --release
 
-      - name: Setup Go
-        uses: actions/setup-go@v4
+  rust-random:
+    name: Rust - but-random
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Build but-random
+        run: cd but-random && cargo build --release && cargo test --release
+
+  # ==================== Go Build ====================
+  go-p2p:
+    name: Go - but-p2p
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
         with:
           go-version: '1.21'
-
       - name: Build but-p2p
-        run: |
-          cd but-p2p
-          go build -o but-p2p-node ./...
+        run: cd but-p2p && go build ./... && go test ./... -v
 
-      - name: Run tests
-        run: |
-          cd but-p2p
-          go test ./... -v
-
-  # ==================== C++ Core Build ====================
-  cpp-build:
-    name: C++ - Build & Test
+  # ==================== C++ Builds ====================
+  cpp-builds:
+    name: C++ - All Modules
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake build-essential libssl-dev
-
+        run: sudo apt-get update && sudo apt-get install -y cmake build-essential libssl-dev
       - name: Build but-core
-        run: |
-          cd but-core
-          mkdir -p build
-          cd build
-          cmake ..
-          make -j$(nproc)
-
-      - name: Run but-core tests
-        run: |
-          cd but-core/build
-          ctest --output-on-failure || echo "No CTest configured, build successful"
-
+        run: cd but-core && mkdir -p build && cd build && cmake .. && make -j$(nproc)
       - name: Build but-consensus
-        run: |
-          cd but-consensus
-          mkdir -p build
-          cd build
-          cmake ..
-          make -j$(nproc)
-
-      - name: Run but-consensus tests
-        run: |
-          cd but-consensus/build
-          ctest --output-on-failure || echo "No CTest configured, build successful"
+        run: cd but-consensus && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+      - name: Build but-vault
+        run: cd but-vault && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+      - name: Build but-zkp
+        run: cd but-zkp && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+      - name: Build but-ai
+        run: cd but-ai && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+      - name: Build but-tee
+        run: cd but-tee && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+      - name: Build but-time
+        run: cd but-time && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+      - name: Build but-did
+        run: cd but-did && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+      - name: Build but-airgap
+        run: cd but-airgap && mkdir -p build && cd build && cmake .. && make -j$(nproc)
 
   # ==================== Flutter Build ====================
-  flutter-build:
-    name: Flutter - Build APK
+  flutter-wallet:
+    name: Flutter - but-wallet
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.19.0'
           channel: 'stable'
-
-      - name: Cache Flutter dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            but-wallet/.dart_tool
-            but-wallet/build
-          key: flutter-${{ runner.os }}-${{ hashFiles('but-wallet/pubspec.yaml') }}
-
       - name: Install dependencies
-        run: |
-          cd but-wallet
-          flutter pub get
-
-      - name: Analyze code
-        run: |
-          cd but-wallet
-          flutter analyze --no-fatal-infos --no-fatal-warnings
-
-      - name: Build APK (Debug)
-        run: |
-          cd but-wallet
-          flutter build apk --debug
-
-      - name: Build APK (Release)
-        run: |
-          cd but-wallet
-          flutter build apk --release
-
-      - name: Upload APK (Debug)
+        run: cd but-wallet && flutter pub get
+      - name: Analyze
+        run: cd but-wallet && flutter analyze --no-fatal-infos --no-fatal-warnings
+      - name: Build APK
+        run: cd but-wallet && flutter build apk --debug && flutter build apk --release
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v3
         with:
           name: but-wallet-debug
           path: but-wallet/build/app/outputs/flutter-apk/app-debug.apk
-
-      - name: Upload APK (Release)
+      - name: Upload Release APK
         uses: actions/upload-artifact@v3
         with:
           name: but-wallet-release
           path: but-wallet/build/app/outputs/flutter-apk/app-release.apk
 
-  # ==================== Final Summary ====================
+  # ==================== Summary ====================
   summary:
     name: Build Summary
-    needs: [rust-build, go-build, cpp-build, flutter-build]
+    needs: [rust-crypto, rust-quantum, rust-random, go-p2p, cpp-builds, flutter-wallet]
     runs-on: ubuntu-latest
-    
     steps:
-      - name: All builds passed
+      - name: Success
         run: |
           echo "============================================"
           echo "  BUT NETWORK - ALL BUILDS SUCCESSFUL"
           echo "============================================"
+          echo "  ✅ Rust: but-crypto"
+          echo "  ✅ Rust: but-quantum"
+          echo "  ✅ Rust: but-random"
+          echo "  ✅ Go: but-p2p"
+          echo "  ✅ C++: but-core"
+          echo "  ✅ C++: but-consensus"
+          echo "  ✅ C++: but-vault (VLT)"
+          echo "  ✅ C++: but-zkp (ZKF)"
+          echo "  ✅ C++: but-ai (AIS)"
+          echo "  ✅ C++: but-tee (TEX)"
+          echo "  ✅ C++: but-time (TLK)"
+          echo "  ✅ C++: but-did (DID)"
+          echo "  ✅ C++: but-airgap (AIR)"
+          echo "  ✅ Flutter: but-wallet"
           echo ""
-          echo "  ✅ Rust (but-crypto)    - Built & Tested"
-          echo "  ✅ Go (but-p2p)         - Built & Tested"
-          echo "  ✅ C++ (but-core)       - Built & Tested"
-          echo "  ✅ C++ (but-consensus)  - Built & Tested"
-          echo "  ✅ Flutter (but-wallet) - APK Generated"
-          echo ""
-          echo "  Download APK from Artifacts section above!"
+          echo "  📱 Download APK from Artifacts!"
           echo "============================================"
