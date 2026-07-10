@@ -1,0 +1,64 @@
+BUT Network License (BNL) v1.0
+Copyright (c) 2026 BUT Network
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, merge, publish, and distribute the Software, subject to the
+following conditions:
+
+1. ATTRIBUTION
+   - The above copyright notice and this license shall be included in all
+     copies or substantial portions of the Software.
+   - Any modified version must clearly state that it is modified from the
+     original BUT Network software.
+
+2. PERSONAL USE
+   - Free for personal, educational, and research purposes.
+   - No restrictions on non-commercial use.
+
+3. COMMERCIAL USE
+   - Commercial use requires written permission from BUT Network.
+   - Contact: license@but.network
+   - Commercial use includes but is not limited to:
+     * Using BUT Network code in a paid product
+     * Offering BUT Network as a service
+     * Integrating BUT Network into enterprise systems
+
+4. SECURITY RESEARCH
+   - Security researchers are explicitly allowed to test, audit, and
+     report vulnerabilities.
+   - Responsible disclosure is appreciated.
+   - Bug bounty rewards may apply — see SECURITY.md
+
+5. COMMUNITY CONTRIBUTIONS
+   - Contributions are welcome under the same license.
+   - Contributors retain their copyright but grant BUT Network
+     a perpetual, worldwide, non-exclusive license to use their
+     contributions.
+
+6. TOKEN USAGE
+   - The BUT token (BUT) is the native currency of BUT Network.
+   - This license does not grant any rights to the BUT token itself.
+   - Token creation and usage are governed by network consensus rules.
+
+7. DISCLAIMER OF WARRANTY
+   - THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT.
+
+8. LIMITATION OF LIABILITY
+   - IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+     FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+     OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+     THE SOFTWARE.
+
+9. GOVERNING LAW
+   - This license shall be governed by the laws of the jurisdiction
+     in which BUT Network is established.
+
+---
+BUT Network — Blockchain Universe Technology
+Email: license@but.network
+Website: https://github.com/sanjaynain754/Butcoin
