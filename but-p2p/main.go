@@ -1,14 +1,10 @@
-package main
-
 import (
-	"fmt"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 )
 
 type SignalRouter struct {
