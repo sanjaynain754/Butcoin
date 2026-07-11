@@ -5,9 +5,7 @@ package main
 
 import (
     "crypto/rand"
-    "encoding/hex"
     "log"
-    "sync"
     "time"
 )
 
