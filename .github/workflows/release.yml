@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      - name: Build Release APK
+        run: |
+          cd but-wallet
+          flutter create --platforms=android --no-overwrite --project-name but_wallet .
+          cd android
+          sed -i 's/ext.kotlin_version = "[0-9.]*"/ext.kotlin_version = "1.9.24"/' build.gradle
+          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 34/' app/build.gradle
+          cd ..
+          flutter pub get
+          flutter build apk --release
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: BUT Wallet ${{ github.ref_name }}
+          body: |
+            # 🚀 BUT Network Wallet - ${{ github.ref_name }}
+            
+            ## What's New:
+            - ✅ 10 Security Layers (CKS, VLT, ZKF, AIS, QSH, TEX, TLK, DID, AIR, QRN)
+            - ✅ 512-bit & 1024-bit Quantum-Ready
+            - ✅ Swap, Staking, NFT, Bridge, Hardware Wallet
+            - ✅ Multi-language Support
+            - ✅ Social Recovery
+            - ✅ but:// Username System
+            
+            ## Download:
+            APK attached below 👇
+          files: |
+            but-wallet/build/app/outputs/flutter-apk/app-release.apk
