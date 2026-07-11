@@ -136,7 +136,7 @@ fn mod_inverse(a: i16, modulus: i16) -> i16 {
 pub struct QSHEngine {
     security_level: u32,
     lattice_dim: usize,
-    modulus: i16,
+    modulus: i32,
 }
 
 impl QSHEngine {
