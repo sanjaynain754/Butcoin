@@ -7,6 +7,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 // ==================== Entropy Sources ====================
 
+#[derive(Debug)]
 pub enum EntropySource {
     OsRandom,        // /dev/urandom, SecureRandom
     CpuJitter,       // CPU instruction timing
