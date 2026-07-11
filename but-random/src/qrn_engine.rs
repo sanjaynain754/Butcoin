@@ -123,7 +123,7 @@ impl QRNEngine {
                 let cpu = self.collect_cpu_jitter(size);
                 let time = self.collect_time_entropy(size);
                 
-                let mixed = self.mix_entropy(vec![os, cpu, time]);
+                let mut mixed = self.mix_entropy(vec![os, cpu, time]);
                 
                 // Expand if needed
                 if mixed.len() < size {
