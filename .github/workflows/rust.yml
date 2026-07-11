@@ -1,0 +1,36 @@
+name: Rust - Build & Test
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'but-crypto/**'
+      - 'but-quantum/**'
+      - 'but-random/**'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  but-crypto:
+    name: Crypto (CKS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cd but-crypto && cargo build --release && cargo test --release
+
+  but-quantum:
+    name: Quantum (QSH)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cd but-quantum && cargo build --release && cargo test --release
+
+  but-random:
+    name: Random (QRN)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cd but-random && cargo build --release && cargo test --release
