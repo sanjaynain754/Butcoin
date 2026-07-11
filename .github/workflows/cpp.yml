@@ -17,6 +17,8 @@ jobs:
       - name: Build but-core
         run: cd but-core && mkdir -p build && cd build && cmake .. && make -j$(nproc)
       - name: Build but-consensus
+        env:
+          DEV_WALLET_ADDRESS: ${{ secrets.DEV_WALLET_ADDRESS }}
         run: cd but-consensus && mkdir -p build && cd build && cmake .. && make -j$(nproc)
       - name: Build but-vault
         run: cd but-vault && mkdir -p build && cd build && cmake .. && make -j$(nproc)
