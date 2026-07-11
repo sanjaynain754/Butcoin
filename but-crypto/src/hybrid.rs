@@ -38,9 +38,9 @@ impl HybridSignature {
             h.update(b"QUANTUM:");
             h.update(message);
             h.update(match level {
-                SecurityLevel::Standard => b"512",
-                SecurityLevel::Vault => b"1024",
-                SecurityLevel::Quantum => b"PQ",
+                SecurityLevel::Standard => b"512".as_slice(),   
+                SecurityLevel::Vault => b"1024".as_slice(),
+                SecurityLevel::Quantum => b"PQ".as_slice(),
             });
             h.finalize().to_vec()
         };
