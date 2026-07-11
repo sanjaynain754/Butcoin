@@ -12,18 +12,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.0'
           channel: 'stable'
-      - run: cd but-wallet && flutter pub get
-      - run: cd but-wallet && flutter build apk --debug
-      - run: cd but-wallet && flutter build apk --release
-      - uses: actions/upload-artifact@v4
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      - name: Create Android project files
+        run: |
+          cd but-wallet
+          flutter create --platforms=android --no-overwrite .
+      
+      - name: Install dependencies
+        run: cd but-wallet && flutter pub get
+      
+      - name: Build Debug APK
+        run: cd but-wallet && flutter build apk --debug
+      
+      - name: Build Release APK
+        run: cd but-wallet && flutter build apk --release
+      
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
         with:
           name: but-wallet-debug
           path: but-wallet/build/app/outputs/flutter-apk/app-debug.apk
-      - uses: actions/upload-artifact@v4
+      
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
         with:
           name: but-wallet-release
           path: but-wallet/build/app/outputs/flutter-apk/app-release.apk
