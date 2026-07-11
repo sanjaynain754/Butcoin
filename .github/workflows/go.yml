@@ -1,0 +1,21 @@
+name: Go - Build & Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  p2p:
+    name: P2P Network
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      - name: Build
+        run: |
+          cd but-p2p
+          go build ./...
