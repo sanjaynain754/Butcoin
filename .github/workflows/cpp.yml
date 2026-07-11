@@ -1,0 +1,34 @@
+name: C++ - Build All
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  all-modules:
+    name: All 9 Modules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: sudo apt-get update && sudo apt-get install -y cmake build-essential libssl-dev
+      - name: Build but-core
+        run: cd but-core && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+      - name: Build but-consensus
+        run: cd but-consensus && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+      - name: Build but-vault
+        run: cd but-vault && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+      - name: Build but-zkp
+        run: cd but-zkp && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+      - name: Build but-ai
+        run: cd but-ai && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+      - name: Build but-tee
+        run: cd but-tee && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+      - name: Build but-time
+        run: cd but-time && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+      - name: Build but-did
+        run: cd but-did && mkdir -p build && cd build && cmake .. && make -j$(nproc)
+      - name: Build but-airgap
+        run: cd but-airgap && mkdir -p build && cd build && cmake .. && make -j$(nproc)
