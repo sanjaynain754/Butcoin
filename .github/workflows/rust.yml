@@ -3,10 +3,6 @@ name: Rust - Build & Test
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'but-crypto/**'
-      - 'but-quantum/**'
-      - 'but-random/**'
   pull_request:
     branches: [ main ]
 
