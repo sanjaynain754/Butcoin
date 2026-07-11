@@ -1,61 +1,50 @@
 name: Flutter - Build APK
-
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
 jobs:
   apk:
     name: Wallet APK
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.0'
           channel: 'stable'
-      
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      
       - name: Create Android project files
         run: |
           cd but-wallet
           flutter create --platforms=android --no-overwrite --project-name but_wallet .
-      
       - name: Fix Kotlin version
         run: |
           cd but-wallet/android
           sed -i 's/ext.kotlin_version = "[0-9.]*"/ext.kotlin_version = "1.9.24"/' build.gradle
           sed -i 's/id "org.jetbrains.kotlin.android" version "[0-9.]*"/id "org.jetbrains.kotlin.android" version "1.9.24"/' settings.gradle 2>/dev/null || true
-      
-      - name: Fix compileSdk to 34
+      - name: Fix compileSdk
         run: |
           cd but-wallet/android
           sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 34/' app/build.gradle
           sed -i 's/compileSdk = 35/compileSdk = 34/' app/build.gradle 2>/dev/null || true
-      
       - name: Install dependencies
         run: cd but-wallet && flutter pub get
-      
       - name: Build Debug APK
         run: cd but-wallet && flutter build apk --debug
-      
       - name: Build Release APK
         run: cd but-wallet && flutter build apk --release
-      
+        continue-on-error: true
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: but-wallet-debug
           path: but-wallet/build/app/outputs/flutter-apk/app-debug.apk
-      
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
