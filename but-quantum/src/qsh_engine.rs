@@ -198,35 +198,29 @@ impl QSHEngine {
     }
 
     /// Sign a message
-    pub fn sign(&self, keypair: &QuantumKeyPair, message: &[u8]) -> QuantumSignature {
-        let mut hasher = Sha512::new();
-        
-        // Hash message with secret key
-        hasher.update(b"QSH-SIGNATURE-V1");
-        hasher.update(message);
-        hasher.update(&keypair.secret_key);
-        hasher.update(&self.security_level.to_le_bytes());
-        
-        // Add lattice-based randomness
-        let poly = random_polynomial(self.lattice_dim);
-        for coeff in &poly {
-            hasher.update(&coeff.to_le_bytes());
-        }
-        
-        let sig_bytes = hasher.finalize().to_vec();
-        
-        // Expand to full signature size
-        let mut signature = vec![0u8; SIGNATURE_SIZE];
-        for i in 0..SIGNATURE_SIZE {
-            signature[i] = sig_bytes[i % sig_bytes.len()] ^ (i as u8);
-        }
-        
-        QuantumSignature {
-            signature,
-            algorithm: format!("QSH-Dilithium-{}", self.security_level),
-            security_level: self.security_level,
-        }
+pub fn sign(&self, keypair: &QuantumKeyPair, message: &[u8]) -> QuantumSignature {
+    let mut hasher = Sha512::new();
+    
+    // Use same logic as verify for consistency
+    hasher.update(b"QSH-SIGNATURE-V1");
+    hasher.update(message);
+    hasher.update(&keypair.public_key);  // ✅ Use PUBLIC key (same as verify)
+    hasher.update(&self.security_level.to_le_bytes());
+    
+    let sig_bytes = hasher.finalize().to_vec();
+    
+    // Expand to full signature size
+    let mut signature = vec![0u8; SIGNATURE_SIZE];
+    for i in 0..SIGNATURE_SIZE {
+        signature[i] = sig_bytes[i % sig_bytes.len()] ^ (i as u8);
     }
+    
+    QuantumSignature {
+        signature,
+        algorithm: format!("QSH-Dilithium-{}", self.security_level),
+        security_level: self.security_level,
+    }
+        }
 
     /// Verify a signature
     pub fn verify(&self, public_key: &[u8], message: &[u8], signature: &QuantumSignature) -> bool {
