@@ -18,6 +18,5 @@ jobs:
       - name: Build
         run: |
           cd but-p2p
-          go mod init github.com/sanjaynain754/Butcoin/but-p2p 2>/dev/null || true
           go mod tidy
           go build ./...
