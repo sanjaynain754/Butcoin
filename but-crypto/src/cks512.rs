@@ -13,7 +13,7 @@ pub const SEED_512: usize = 64;
 pub const KEY_512: usize = 64;
 
 /// Standard keypair with 512-bit keys
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone)]
 pub struct StandardKeyPair {
     pub spend_key: [u8; KEY_512],
     pub view_key: [u8; KEY_512],
