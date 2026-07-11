@@ -13,7 +13,7 @@ pub const SEED_1024: usize = 128;
 pub const KEY_1024: usize = 128;
 
 /// Ultra-secure vault keypair
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone)]
 pub struct VaultKeyPair {
     pub primary_key: [u8; KEY_1024],
     pub secondary_key: [u8; KEY_1024],
