@@ -101,7 +101,7 @@ class VaultGuard {
     
     // 1000 iterations (simplified - production would use actual PBKDF2)
     for (int i = 0; i < 1000; i++) {
-      data = _simpleHash(data, i);
+      data = Uint8List.fromList(_simpleHash(data, i));
     }
     
     return base64Encode(data);
