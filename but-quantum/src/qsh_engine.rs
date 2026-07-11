@@ -155,7 +155,7 @@ impl QSHEngine {
         QSHEngine {
             security_level: level,
             lattice_dim: dim,
-            modulus: 8380417, // Large prime for lattice
+            modulus: 8380417, // ✅ अब i32 में fit होगा
         }
     }
 
