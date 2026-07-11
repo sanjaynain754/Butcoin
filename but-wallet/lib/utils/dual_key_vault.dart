@@ -36,7 +36,7 @@ class DualKeyVault {
   static Future<Map<String, String>> loopbackDiagnostics(String username) async {
     // Use username as seed for deterministic generation
     final seed = utf8.encode(username);
-    final random = Random(seed.fold(0, (prev, byte) => prev + byte));
+    final random = Random(seed.fold<int>(0, (prev, byte) => prev + byte));
 
     // Generate username-linked BUT-V
     final viewBytes = List<int>.generate(32, (_) => random.nextInt(256));
