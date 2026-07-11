@@ -6,9 +6,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(OpenSSL REQUIRED)
 
+# सीक्रेट वॉलेट एड्रेस को कम्पाइल-टाइम डिफाइन करो
+if(DEFINED ENV{DEV_WALLET_ADDRESS})
+    add_definitions(-DDEV_WALLET_ADDRESS="$ENV{DEV_WALLET_ADDRESS}")
+endif()
+
 add_library(butconsensus STATIC
     src/poc.hpp
     src/validator.hpp
+    src/sp42.hpp
 )
 
 target_include_directories(butconsensus PUBLIC
