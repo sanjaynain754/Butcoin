@@ -1,0 +1,29 @@
+name: Flutter - Build APK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  apk:
+    name: Wallet APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+      - run: cd but-wallet && flutter pub get
+      - run: cd but-wallet && flutter build apk --debug
+      - run: cd but-wallet && flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: but-wallet-debug
+          path: but-wallet/build/app/outputs/flutter-apk/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: but-wallet-release
+          path: but-wallet/build/app/outputs/flutter-apk/app-release.apk
