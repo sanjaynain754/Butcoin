@@ -176,7 +176,7 @@ class _TokenCreateScreenState extends State<TokenCreateScreen> {
               decoration: const InputDecoration(
                 labelText: 'Decimals (0-18)',
                 hintText: 'Default: 3',
-                prefixIcon: Icon(Icons.decimal_increase),
+                prefixIcon: Icon(Icons.tune),
                 border: OutlineInputBorder(),
                 helperText: 'Like 1 BUT = 1000 Bites (3 decimals)',
               ),

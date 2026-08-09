@@ -1,0 +1,42 @@
+Categories:
+  - Connectivity
+  - Internet
+License: Other
+WebSite: https://but.network
+SourceCode: https://github.com/sanjaynain754/Butcoin
+IssueTracker: https://github.com/sanjaynain754/Butcoin/issues
+Changelog: https://github.com/sanjaynain754/Butcoin/commits/main/but-wallet
+Donate: https://but.network
+AutoName: BUT Wallet
+Summary: Quantum-safe mobile wallet for the BUT Network
+Description: |
+  BUT Wallet is a Flutter-based Android wallet for the BUT Network. It provides
+  local wallet access, token management, authentication, and network features.
+
+  This file is a draft for F-Droid submission review. The repository currently
+  uses a custom license in LICENSE; the F-Droid metadata license field must be
+  confirmed by the project maintainers before submission.
+
+  The generated release APK is debug-key signed for local installation only.
+  F-Droid should build and sign the application independently from source.
+RepoType: git
+Repo: https://github.com/sanjaynain754/Butcoin.git
+Builds:
+  - versionName: 0.1.0
+    versionCode: 1
+    commit: f9e12334b7ce5dbbe35badae581f92bba055c142
+    subdir: but-wallet
+    sudo:
+      - apt-get update
+      - apt-get install -y openjdk-21-jdk-headless
+    gradle:
+      - yes
+    flutter: 3.44.9
+    output: build/app/outputs/flutter-apk/app-release.apk
+    build:
+      - flutter pub get
+      - flutter build apk --release
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: 0.1.0
+CurrentVersionCode: 1
