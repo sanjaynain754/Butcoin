@@ -11,18 +11,14 @@ if(DEFINED ENV{DEV_WALLET_ADDRESS})
     add_definitions(-DDEV_WALLET_ADDRESS="$ENV{DEV_WALLET_ADDRESS}")
 endif()
 
-add_library(butconsensus STATIC
-    src/poc.hpp
-    src/validator.hpp
-    src/sp42.hpp
-)
+add_library(butconsensus INTERFACE)
 
-target_include_directories(butconsensus PUBLIC
+target_include_directories(butconsensus INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${OPENSSL_INCLUDE_DIR}
 )
 
-target_link_libraries(butconsensus PUBLIC
+target_link_libraries(butconsensus INTERFACE
     OpenSSL::Crypto
 )
 
