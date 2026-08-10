@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <algorithm>
 #include <chrono>
 #include <random>
 #include <sstream>
@@ -203,7 +204,7 @@ public:
         auto now = std::chrono::system_clock::now();
         auto unlock = std::chrono::system_clock::from_time_t(puzzle.unlock_timestamp);
         auto remaining = std::chrono::duration_cast<std::chrono::seconds>(unlock - now);
-        return std::max(remaining.count(), 0LL);
+        return std::max<int64_t>(static_cast<int64_t>(remaining.count()), 0);
     }
 
     // Get puzzle info
